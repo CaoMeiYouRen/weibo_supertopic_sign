@@ -8,12 +8,12 @@ const axios = require('axios');
 const dayjs = require('dayjs');
 const qs = require('qs');
 const dotenv = require("dotenv");
-const notifier = require('./sendNotify.js');
+const notifier = require('./SendNotify.js');
 dotenv.config();
 
 /** dependencies **/
 class logger {
-    constructor () {
+    constructor() {
 
     }
 
@@ -24,22 +24,22 @@ class logger {
 
     warning(msg) {
         const current_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
-        console.log(`${current_time} warning ${msg}`);       
+        console.log(`${current_time} warning ${msg}`);
     }
 
     error(msg) {
         const current_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
-        console.log(`${current_time} error ${msg}`);            
+        console.log(`${current_time} error ${msg}`);
     }
 }
 
 log = new logger();
 
-var sharedArrayBuffer_for_sleep = new SharedArrayBuffer( 4 ) ;
-var sharedArray_for_sleep = new Int32Array( sharedArrayBuffer_for_sleep ) ;
+var sharedArrayBuffer_for_sleep = new SharedArrayBuffer(4);
+var sharedArray_for_sleep = new Int32Array(sharedArrayBuffer_for_sleep);
 
-var sleep = function( n ) {
-    Atomics.wait( sharedArray_for_sleep , 0 , 0 , n * 1000 ) ;
+var sleep = function (n) {
+    Atomics.wait(sharedArray_for_sleep, 0, 0, n * 1000);
 }
 /*************** */
 
@@ -64,15 +64,12 @@ function random_range(min, max) {
     switch (arguments.length) {
         case 1:
             return parseInt(Math.random() * min + 1, 10);
-        break;
 
         case 2:
             return parseInt(Math.random() * (max - min + 1) + min, 10);
-        break;
 
         default:
             return 0;
-        break;
     }
 }
 
@@ -89,9 +86,9 @@ function form_params(data, type) {
         data.split('&').forEach((item, index) => {
 
             const split_item = item.split('=');
-    
+
             params[split_item[0]] = split_item[1];
-        })   
+        })
 
         return params;
     } else if (type === 'sign_action') {
@@ -115,9 +112,9 @@ function form_params(data, type) {
         data.split('&').forEach((item, index) => {
 
             const split_item = item.split('=');
-    
+
             cookie[split_item[0]] = split_item[1];
-        })   
+        })
 
         const abort_property = ['containerid', 'extparam', 'page', 'v_f'];
         const cookie_order = ['aid', 'c', 'from', 'gsid', 'i', 'lang', 's', 'ua', 'v_p'];
@@ -130,7 +127,7 @@ function form_params(data, type) {
         })
 
         return qs.stringify(params);
-    }  else {
+    } else {
         try {
             data.split('&').forEach((item, index) => {
 
@@ -139,10 +136,10 @@ function form_params(data, type) {
                 params[split_item[0]] = split_item[1];
             })
         }
-        catch (err){
+        catch (err) {
             log.error(err);
         }
-        return params;       
+        return params;
     }
 }
 
@@ -169,12 +166,12 @@ async function get_username(cookie) {
         timeout: 3000,
     }).then(res => {
         const request_res = res.data;
-    
+
         if (request_res.errno != undefined) {
             log.error(`获取用户名失败, 错误提示：${request_res.errmsg}`)
             error_msg_list.push(`获取用户名失败, 错误提示：${request_res.errmsg}`);
         }
-    
+
         username = request_res.name;
     }).catch(err => {
         log.error(`获取用户名失败, 错误提示：${err}`)
@@ -212,47 +209,47 @@ async function get_follow_list(cookie) {
             params: data,
             timeout: 3000,
         })
-        .then(res => {
-            res_obj = res.data;
+            .then(res => {
+                res_obj = res.data;
 
-            if (res_obj.errno != undefined) {
-                log.info(`获取超话列表第 ${page} 页数据失败, 错误提示：${res_obj.errmsg}`)
-                error_msg_list.push(`获取超话列表第 ${page} 页数据失败, 错误提示：${res_obj.errmsg}`);
-                return;
-            }
-    
-            let card_group = res_obj.cards[0].card_group;
-            let card_list_info = res_obj.cardlistInfo;
-    
-            since_id = card_list_info.since_id;
-            try {
-                page = JSON.parse(since_id).page.toString();
-            } catch {
-                page = (parseInt(page) + 1).toString(); 
-            }
+                if (res_obj.errno != undefined) {
+                    log.info(`获取超话列表第 ${page} 页数据失败, 错误提示：${res_obj.errmsg}`)
+                    error_msg_list.push(`获取超话列表第 ${page} 页数据失败, 错误提示：${res_obj.errmsg}`);
+                    return;
+                }
 
-            for (const item of card_group) {
-                if (item.card_type === '8') {
-                    const page_index = item.itemid.slice(item.itemid.indexOf('follow_super_follow_') + 'follow_super_follow_'.length, item.itemid.length);
-                    const topic = {
-                        title: item.title_sub,
-                        level: item.desc1.slice(item.desc1.indexOf('.') + 1, item.desc1.length),
-                        sign_status: item.buttons[0].name,
-                        sign_action: item.buttons[0].name === '已签' ? '' : item.buttons[0].params.action,
-                        since_id: since_id,
-                        page: page_index.split('_')[0],
+                let card_group = res_obj.cards[0].card_group;
+                let card_list_info = res_obj.cardlistInfo;
+
+                since_id = card_list_info.since_id;
+                try {
+                    page = JSON.parse(since_id).page.toString();
+                } catch {
+                    page = (parseInt(page) + 1).toString();
+                }
+
+                for (const item of card_group) {
+                    if (item.card_type === '8') {
+                        const page_index = item.itemid.slice(item.itemid.indexOf('follow_super_follow_') + 'follow_super_follow_'.length, item.itemid.length);
+                        const topic = {
+                            title: item.title_sub,
+                            level: item.desc1.slice(item.desc1.indexOf('.') + 1, item.desc1.length),
+                            sign_status: item.buttons[0].name,
+                            sign_action: item.buttons[0].name === '已签' ? '' : item.buttons[0].params.action,
+                            since_id: since_id,
+                            page: page_index.split('_')[0],
+                        }
+
+                        follow_list.push(topic);
                     }
+                }
 
-                    follow_list.push(topic);
-                }                
-            }
-
-            log.info(`获取超话列表第 ${page-1} 页数据成功`);            
-        })
-        .catch(err => {
-            log.error(`获取超话列表第 ${page} 页数据失败. 错误提示：${err}`)
-            error_msg_list.push(`获取超话列表第 ${page} 页数据失败, 错误提示：${err}`);
-        })
+                log.info(`获取超话列表第 ${page - 1} 页数据成功`);
+            })
+            .catch(err => {
+                log.error(`获取超话列表第 ${page} 页数据失败. 错误提示：${err}`)
+                error_msg_list.push(`获取超话列表第 ${page} 页数据失败, 错误提示：${err}`);
+            })
 
         if (since_id === '' || isSuccess === false || since_id === '0') {
             break;
@@ -264,7 +261,7 @@ async function get_follow_list(cookie) {
 
 async function sign_topic(topic_list) {
     log.info('开始执行签到');
-    
+
     const base_url = 'https://api.weibo.cn/2/page/button';
     const list_length = topic_list.length;
 
@@ -297,11 +294,11 @@ async function sign_topic(topic_list) {
                     }
                 }
             })
-            .catch(err => {
-                log.error(`超话 ${item.title} 签到失败 ${index} / ${list_length}, 错误提示：${err}`);
-                error_msg_list.push(`超话 ${item.title} 签到失败 ${index} / ${list_length}, 错误提示：${err}`);
-            })
-        }        
+                .catch(err => {
+                    log.error(`超话 ${item.title} 签到失败 ${index} / ${list_length}, 错误提示：${err}`);
+                    error_msg_list.push(`超话 ${item.title} 签到失败 ${index} / ${list_length}, 错误提示：${err}`);
+                })
+        }
     }
 
     log.info('当前用户列表签到执行完成');
@@ -329,7 +326,7 @@ async function send_notify(res) {
             let start_with = ' 签到❌ \n';
 
             failed_topic_list.forEach(item => {
-                start_with = start_with + '    ' + item + '\n'; 
+                start_with = start_with + '    ' + item + '\n';
             })
 
             failed_content = start_with;
@@ -338,17 +335,17 @@ async function send_notify(res) {
         }
 
         content = content.concat(`${name}\n 签到✅ ${signed_topic} / ${total_topic} \n`);
-        content = failed_topic_list.length === 0 ? content.concat('\n\n') :  content.concat(failed_content + '\n\n');
-   }
+        content = failed_topic_list.length === 0 ? content.concat('\n\n') : content.concat(failed_content + '\n\n');
+    }
 
-   let title = `微博超话签到 ✔ ${total_success} ✖️ ${total_failed}`;
-   notifier.sendNotify(title, content, {}, '');
+    let title = `微博超话签到 ✔ ${total_success} ✖️ ${total_failed}`;
+    notifier.sendNotify(title, content, {}, '');
     return;
 }
 
 async function send_err_msg(msg) {
     if (msg.length === 0) return;
-    
+
     let content = '';
     for (let i = 0; i < msg.length; i++) {
         content = content.concat(msg[i] + '\n');
@@ -369,18 +366,18 @@ async function main_handler() {
         try {
             account_list = COOKIE_WEIBO.split(';');
         }
-        catch(err) {
+        catch (err) {
             log.error('获取 Cookie 失败');
             error_msg_list.push(`获取 Cookie 失败`);
             return;
-        }        
+        }
     }
 
 
     if (account_list.length === 0) {
         log.error('未获得任何 Cookie 信息');
         error_msg_list.push(`未获得任何 Cookie 信息`);
-        return;      
+        return;
     }
 
     let task_res = []
@@ -391,8 +388,8 @@ async function main_handler() {
             account_cookie = account_cookie.slice(account_cookie.indexOf('cardlist?') + 'cardlist?'.length, account_cookie.length);
         }
 
-        CURRENT_COOKIE = account_cookie; 
-        
+        CURRENT_COOKIE = account_cookie;
+
         const username = await get_username(account_cookie);
         const follow_list = await get_follow_list(account_cookie);
 
@@ -404,9 +401,9 @@ async function main_handler() {
 
         const sign_result = await sign_topic(follow_list);
 
-        task_res.push({name: username, data: sign_result});
+        task_res.push({ name: username, data: sign_result });
     }
-    
+
     const res = await send_notify(task_res);
     const err_res = await send_err_msg(error_msg_list);
 }
