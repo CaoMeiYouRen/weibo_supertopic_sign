@@ -369,6 +369,7 @@ async function main_handler() {
         catch (err) {
             log.error('获取 Cookie 失败');
             error_msg_list.push(`获取 Cookie 失败`);
+            await send_err_msg(error_msg_list);
             return;
         }
     }
@@ -377,6 +378,7 @@ async function main_handler() {
     if (account_list.length === 0) {
         log.error('未获得任何 Cookie 信息');
         error_msg_list.push(`未获得任何 Cookie 信息`);
+        await send_err_msg(error_msg_list);
         return;
     }
 
@@ -396,6 +398,7 @@ async function main_handler() {
         if (follow_list.length === 0) {
             log.warning('无待签到列表');
             error_msg_list.push(`无待签到列表`);
+            await send_err_msg(error_msg_list);
             return;
         }
 
