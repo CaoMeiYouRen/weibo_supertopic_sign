@@ -163,7 +163,7 @@ async function get_username(cookie) {
         url: base_url,
         data: cookie,
         headers: request_username_headers,
-        timeout: 3000,
+        timeout: 10000,
     }).then(res => {
         const request_res = res.data;
 
@@ -207,7 +207,7 @@ async function get_follow_list(cookie) {
             url: base_url,
             headers: request_headers,
             params: data,
-            timeout: 3000,
+            timeout: 10000,
         })
             .then(res => {
                 res_obj = res.data;
