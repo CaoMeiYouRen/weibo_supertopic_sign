@@ -280,7 +280,7 @@ async function sign_topic(topic_list) {
                 url: base_url,
                 headers: request_headers,
                 params: sign_params,
-                timeout: 3000
+                timeout: 10000
             }).then(res => {
                 let res_obj = res.data;
 
