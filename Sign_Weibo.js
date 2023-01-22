@@ -11,6 +11,41 @@ const dotenv = require("dotenv");
 const notifier = require('./SendNotify.js');
 dotenv.config();
 
+async function sleep2(n) {
+    return new Promise((resolve) => setTimeout(resolve, n))
+}
+
+async function retryBackoff(cb, config = {}) {
+    const { maxRetries = 3, initialInterval = 1000, maxInterval = 60 * 1000, shouldRetry = () => true } = config;
+    let currentRetries = 0;
+    do {
+        try {
+            return await cb();
+        }
+        catch (err) {
+            if (!await shouldRetry(err, currentRetries)) {
+                throw err;
+            }
+            currentRetries++;
+            if (currentRetries >= maxRetries) {
+                throw new Error(`函数 ${cb.name} 重试次数已达到最大重试次数 ${maxRetries} 次！\nError message:${err?.message}`);
+            }
+            const interval = Math.max(1000, initialInterval);
+            const delayed = interval * 2 ** currentRetries;
+            if (delayed >= maxInterval) {
+                throw new Error(`函数 ${cb.name} 重试次数已达到重试间隔 ${maxInterval} 次！\nError message:${err?.message}`);
+            }
+            await sleep2(delayed);
+        }
+    } while (currentRetries < maxRetries);
+}
+
+async function retryAxios(config) {
+    return retryBackoff(async () => { return await axios(config) }, {
+
+    })
+}
+
 /** dependencies **/
 class logger {
     constructor() {
@@ -158,12 +193,12 @@ async function get_username(cookie) {
 
     let username = '';
 
-    await axios({
+    await retryAxios({
         method: 'post',
         url: base_url,
         data: cookie,
         headers: request_username_headers,
-        timeout: 10000,
+        timeout: 15000,
     }).then(res => {
         const request_res = res.data;
 
@@ -202,12 +237,12 @@ async function get_follow_list(cookie) {
         data['v_f'] = page;
         data['since_id'] = since_id;
 
-        const isSuccess = await axios({
+        const isSuccess = await retryAxios({
             method: 'get',
             url: base_url,
             headers: request_headers,
             params: data,
-            timeout: 10000,
+            timeout: 15000,
         })
             .then(res => {
                 res_obj = res.data;
@@ -275,12 +310,12 @@ async function sign_topic(topic_list) {
             let sign_params = form_params(item.sign_action, 'sign_action');
 
             sleep(random_range(15, 30));
-            await axios({
+            await retryAxios({
                 method: 'get',
                 url: base_url,
                 headers: request_headers,
                 params: sign_params,
-                timeout: 10000
+                timeout: 15000
             }).then(res => {
                 let res_obj = res.data;
 
