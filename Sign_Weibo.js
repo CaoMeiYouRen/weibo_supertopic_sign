@@ -374,7 +374,7 @@ async function send_notify(res) {
         }
 
         content = content.concat(`${name}\n 签到✅ ${signed_topic} / ${total_topic} \n`);
-        content = content + `\n\n${data.filter(item.sign_status === '已签').map(item => item.log).join('\n\n')}`
+        content = content + `\n\n${data.filter(item => item.sign_status === '已签').map(item => item.log).join('\n\n')}`
         content = failed_topic_list.length === 0 ? content.concat('\n\n') : content.concat(failed_content + '\n\n');
 
     }
