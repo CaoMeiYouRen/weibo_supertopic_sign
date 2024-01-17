@@ -87,6 +87,8 @@ if (process.env.COOKIE_WEIBO) {
 
 const error_msg_list = [];
 
+const task_res = []
+
 const request_headers = {
     'Accept': '*/*',
     'Host': 'api.weibo.cn',
@@ -305,6 +307,7 @@ async function sign_topic(topic_list) {
         const index = i + 1;
 
         if (item.sign_status === '已签') {
+            item.log = `超话 ${item.title} 已签到 ${index} / ${list_length}`
             log.info(`超话 ${item.title} 已签到 ${index} / ${list_length}`);
         } else {
             let sign_params = form_params(item.sign_action, 'sign_action');
@@ -325,6 +328,7 @@ async function sign_topic(topic_list) {
                 } else {
                     if (res_obj.msg === '已签到') {
                         item.sign_status = '已签';
+                        item.log = `超话 ${item.title} 签到成功 ${index} / ${list_length}`
                         log.info(`超话 ${item.title} 签到成功 ${index} / ${list_length}`);
                     }
                 }
@@ -370,7 +374,9 @@ async function send_notify(res) {
         }
 
         content = content.concat(`${name}\n 签到✅ ${signed_topic} / ${total_topic} \n`);
+        content = content + `\n\n${data.filter(item.sign_status === '已签').map(item => item.log).join('\n\n')}`
         content = failed_topic_list.length === 0 ? content.concat('\n\n') : content.concat(failed_content + '\n\n');
+
     }
 
     let title = `微博超话签到 ✔ ${total_success} ✖️ ${total_failed}`;
@@ -417,7 +423,7 @@ async function main_handler() {
         return;
     }
 
-    let task_res = []
+
     for (let i = 0; i < account_list.length; i++) {
         let account_cookie = account_list[i];
 
