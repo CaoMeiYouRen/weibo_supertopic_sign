@@ -9,7 +9,9 @@ const dayjs = require('dayjs');
 const qs = require('qs');
 const dotenv = require("dotenv");
 const notifier = require('./SendNotify.js');
-dotenv.config();
+dotenv.config({
+    path: ['.env.local', '.env']
+});
 
 async function sleep2(n) {
     return new Promise((resolve) => setTimeout(resolve, n))
